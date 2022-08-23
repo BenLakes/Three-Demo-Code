@@ -1,3 +1,4 @@
+// 最基础场景  包含最基本的场景内容
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
