@@ -1,9 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import gsap from 'gsap';
-import * as dat from 'dat.gui';
 console.log("当前Three的版本", THREE.REVISION)
-// 目标 使用 dat.GUI 控制属性
+// 目标 gsap 导入动画库
 
 
 let scene = null;
@@ -50,58 +49,58 @@ function initScene() {
   let cubeMaterial = new THREE.MeshBasicMaterial({ color: "#ff0000" })
   let cubeMesh = new THREE.Mesh(cubeGeo, cubeMaterial)
   
-scene.add(cubeMesh)
-const params = {
-  color: '#ffff00',
-  // 执行gsap动画
-  fn: () => {
-    gsap.to(cubeMesh.position, {x: 5, ease: 'power1.inOut', duration: 5, yoyo: true, repeat: -1})
-  }
-}
-
-let gui = new dat.GUI();
-
-gui.add(cubeMesh.position, "x").min(0).max(10).step(0.01).name("cubeX").onChange(val => { 
-   console.log("值被修改", val)
-}).onFinishChange(value => { 
-  console.log("完全停止下", value);
-})
-// 设置颜色
-gui.addColor(params, "color").onChange(value => { 
-  cubeMesh.material.color.set(value)
-})
-// 设置几何体 是否可见
-gui.add(cubeMesh, "visible").name("是否显示");
-
-let folder = gui.addFolder("设置立方体")
-folder.add(cubeMesh.material, 'wireframe');
-
-folder.add(params, "fn").name("立方体运动");
-
-
+  scene.add(cubeMesh)
 
   //渲染场景
 renderScene()
 
-
-
-window.addEventListener("dblclick", (e) => { 
-  const fullScreenElement = document.fullscreenElement;
-  // 判断当前是否有 全屏对象
-  if (!fullScreenElement) {
-    renderer.domElement.requestFullscreen();
-  } else { 
-    // 当有对象存在的时候 退出
-    document.exitFullscreen();
+// gsap 动画  to 是从头到尾  from 是从尾到头  的过程
+let cubePositionXAnimate = gsap.from(cubeMesh.position, {
+  // 设置对象属性的值
+  y: 5,
+  // 执行时间
+  duration: 5,
+  // 动画类型
+  ease: "power1.inOut",
+  // 是否重复
+  repeat: -1,
+  // 两次重复之间的间隔时间
+  // repeatDelay
+  // true 每次重复播放都会前后交替进行 类似 from 和 to 都执行一遍
+  yoyo: true,
+  // 延迟动画执行属性
+  // delay
+  onComplete: () => {
+    console.log("动画完成");
+  },
+  onStart: () => { 
+    console.log("动画开始");
   }
 })
-window.addEventListener("resize", () => { 
-  // 设置相机 aspect  和 投影  以及 渲染器的大小
-  camera.aspect = window.innerWidth / window.innerHeight;
-  // 更新相机矩阵
-  camera.updateProjectionMatrix()
-  renderer.setSize(window.innerWidth, window.innerHeight);
+// 暂停和开启动画
+window.addEventListener('dblclick', (e) => { 
+  if (cubePositionXAnimate.isActive()) {
+    // 暂停动画
+    cubePositionXAnimate.pause();
+    cubeRotationXAni.pause();
+  } else { 
+    // 继续动画
+    cubePositionXAnimate.resume()
+    cubeRotationXAni.resume()
+  }
 })
+
+//设置旋转
+let cubeRotationXAni = gsap.to(cubeMesh.rotation, {
+  x: 2 * Math.PI,
+  duration: 10,
+  yoyo: true,
+  repeat: -1,
+  ease: 'power1.inOut'
+})
+
+
+
 
 function renderScene() { 
   renderer.render(scene, camera);
